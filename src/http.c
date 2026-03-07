@@ -27,10 +27,27 @@ int http_parse(const char *raw, int len, http_request_t *req) {
     if (pl >= (int)sizeof(req->path)) pl = sizeof(req->path) - 1;
     strncpy(req->path, p, pl);
 
-    /* WebSocket upgrade */
-    if (strstr(raw, "Upgrade: websocket") || strstr(raw, "Upgrade: WebSocket")) {
+    /* WebSocket upgrade — check case-insensitively, Railway proxy lowercases headers */
+    int is_ws = 0;
+    {
+        /* make a lowercase copy of the headers only (up to \r\n\r\n) */
+        char lower[1024] = {0};
+        int copy_len = (int)sizeof(lower) - 1;
+        const char *hdr_end = strstr(raw, "\r\n\r\n");
+        if (hdr_end) {
+            int hdr_len = (int)(hdr_end - raw);
+            if (hdr_len < copy_len) copy_len = hdr_len;
+        }
+        for (int i = 0; i < copy_len; i++)
+            lower[i] = (raw[i] >= 'A' && raw[i] <= 'Z') ? raw[i] + 32 : raw[i];
+        if (strstr(lower, "upgrade: websocket")) is_ws = 1;
+    }
+
+    if (is_ws) {
         req->is_ws_upgrade = 1;
+        /* find Sec-WebSocket-Key — try both capitalizations */
         const char *key = strstr(raw, "Sec-WebSocket-Key:");
+        if (!key) key = strstr(raw, "sec-websocket-key:");
         if (key) {
             key += 18;
             while (*key == ' ') key++;

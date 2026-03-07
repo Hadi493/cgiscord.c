@@ -42,6 +42,11 @@ static void mod_epoll(int epfd, int fd, uint32_t events) {
 int server_init(server_t *s) {
     memset(s, 0, sizeof(*s));
 
+    /* Railway (and most PaaS) inject PORT env var — use it if set */
+    int port = SERVER_PORT;
+    const char *port_env = getenv("PORT");
+    if (port_env && atoi(port_env) > 0) port = atoi(port_env);
+
     s->listen_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (s->listen_fd < 0) return -1;
 
@@ -51,7 +56,7 @@ int server_init(server_t *s) {
 
     struct sockaddr_in addr = {0};
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(SERVER_PORT);
+    addr.sin_port = htons(port);
     addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(s->listen_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
@@ -64,6 +69,7 @@ int server_init(server_t *s) {
     if (s->epfd < 0) return -1;
 
     add_to_epoll(s->epfd, s->listen_fd, EPOLLIN);
+    printf("[server] listening on port %d\n", port);
     return 0;
 }
 
