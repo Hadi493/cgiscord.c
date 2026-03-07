@@ -1,5 +1,8 @@
 FROM debian:bookworm-slim
 
+# bust cache
+ARG CACHEBUST=2
+
 RUN apt-get update && apt-get install -y \
     gcc \
     libsqlite3-dev \
@@ -15,7 +18,6 @@ RUN gcc -Wall -O2 -Iinclude \
     -o cgiscord \
     -lsqlite3 -lssl -lcrypto -lpthread \
     && echo "=== build ok ===" \
-    && ls -lh cgiscord \
-    && file cgiscord
+    && ls -lh cgiscord
 
 CMD ["./cgiscord"]
