@@ -1,0 +1,31 @@
+# Build output
+cord
+
+# Database
+*.db
+*.db-wal
+*.db-shm
+
+# Object files
+*.o
+*.a
+
+# Debug / profiling
+*.out
+gmon.out
+callgrind.out.*
+perf.data*
+core
+vgcore.*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.neovim/
+
+# OS
+.DS_Store
+Thumbs.db
