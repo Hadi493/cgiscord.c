@@ -31,3 +31,4 @@ const VAD_RMS_THRESHOLD = 0.015;
 ## Host online
 
 Run on a VPS and open port 7000. Friends connect to `http://YOUR_IP:7000`.
+# cgiscord
